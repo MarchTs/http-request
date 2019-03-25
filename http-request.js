@@ -16,7 +16,7 @@ const request = (url, httpOption = HttpOption, response) => {
             var body = Buffer.concat(chunks);
             try {
                 body = JSON.parse(body.toString());
-            } catch (ex) {}
+            } catch {}
             response({
                 statusCode: res.statusCode,
                 body: body
@@ -24,10 +24,7 @@ const request = (url, httpOption = HttpOption, response) => {
         });
 
         res.on("error", error => {
-            response({
-                statusCode: 400,
-                body: error
-            });
+            throw error;
         });
     });
 };
@@ -35,15 +32,18 @@ const request = (url, httpOption = HttpOption, response) => {
 // FIXME: using npm fetch to connect http request handle microservice?
 module.exports = async (url, httpOption = HttpOption, requestBody) => {
     return new Promise((resolve, reject) => {
+        let startTimer = new Date();
         try {
             process.on("uncaughtException", error => {
-                resolve({
+                let response = {
                     statusCode: 500,
                     body: {
                         message: "microservice server is ofline",
                         error: error
-                    }
-                });
+                    },
+                    duration: new Date() - startTimer
+                };
+                reject(response);
             });
 
             const convertedBody = JSON.stringify({ ...requestBody });
@@ -51,9 +51,9 @@ module.exports = async (url, httpOption = HttpOption, requestBody) => {
             if (httpOption.option.method != "GET")
                 httpOption.addContent(convertedBody.length);
 
-            console.log("httpRequest", convertedBody);
+            // console.log("httpRequest", convertedBody);
             let req = request(url, httpOption, response => {
-                //TODO: call third party log
+                resolve.duration = new Date() - startTimer;
                 resolve(response);
             });
 
@@ -61,12 +61,12 @@ module.exports = async (url, httpOption = HttpOption, requestBody) => {
 
             req.end();
         } catch (ex) {
-            //TODO: call third party
-            resolve({
-                // TODO: log error : localhost:3001/
+            let response = {
                 statusCode: 500,
-                body: { error: ex.message }
-            });
+                body: { error: ex.message },
+                duration: new Date() - startTimer
+            };
+            reject(response);
         }
     });
 };
