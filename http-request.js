@@ -43,17 +43,20 @@ module.exports = async (url, httpOption = HttpOption, requestBody) => {
                     },
                     duration: new Date() - startTimer
                 };
+                console.log("uncaughtException log: ", response);
                 reject(response);
             });
 
             const convertedBody = JSON.stringify({ ...requestBody });
 
-            if (httpOption.option.method != "GET")
-                httpOption.addContent(convertedBody.length);
+            // if (httpOption.option.method != "GET")
+            //     httpOption.addContent(convertedBody.length);
 
-            // console.log("httpRequest", convertedBody);
+            // console.log("httpRequest:", convertedBody, httpOption.option);
             let req = request(url, httpOption, response => {
-                resolve.duration = new Date() - startTimer;
+                response.duration = new Date() - startTimer;
+                // console.log("response", response);
+
                 resolve(response);
             });
 
@@ -63,9 +66,13 @@ module.exports = async (url, httpOption = HttpOption, requestBody) => {
         } catch (ex) {
             let response = {
                 statusCode: 500,
-                body: { error: ex.message },
+                body: { message: "unexpected cause", error: ex.message },
                 duration: new Date() - startTimer
             };
+            console.log(
+                "\nerror response from " + url.toString() + " : \n",
+                response
+            );
             reject(response);
         }
     });
