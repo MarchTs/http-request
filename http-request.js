@@ -55,7 +55,7 @@ module.exports = async (url, httpOption = HttpOption, requestBody) => {
             const convertedBody = JSON.stringify(requestBody);
 
             if (httpOption.option.method != "GET")
-                httpOption.addContent(convertedBody.length);
+                httpOption.addContent(Buffer.byteLength(convertedBody));
 
             // console.log("httpRequest:", convertedBody, httpOption.option);
             let req = request(url, httpOption, response => {
