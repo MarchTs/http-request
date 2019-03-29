@@ -1,10 +1,12 @@
-const HttpOption = require("http-options");
+const HttpOption = require("@march_ts/http-option");
 const https = require("https");
 const http = require("http");
 
 const request = (url, httpOption = HttpOption, response) => {
-    if (typeof url !== "string") url = url.toString();
-    const httpProtocol = url.split(":")[0] === "https" ? https : http;
+    const httpProtocol = url.protocol === "https:" ? https : http;
+    if (typeof url !== "string") {
+        url = url.toString();
+    }
     return httpProtocol.request(url, httpOption.option, res => {
         var chunks = [];
 
@@ -16,7 +18,9 @@ const request = (url, httpOption = HttpOption, response) => {
             var body = Buffer.concat(chunks);
             try {
                 body = JSON.parse(body.toString());
-            } catch {}
+            } catch (error) {
+                body = body.toString();
+            }
             response({
                 statusCode: res.statusCode,
                 body: body
@@ -36,9 +40,9 @@ module.exports = async (url, httpOption = HttpOption, requestBody) => {
         try {
             process.on("uncaughtException", error => {
                 let response = {
-                    statusCode: 500,
+                    statusCode: 503,
                     body: {
-                        message: "microservice server is ofline",
+                        message: "server " + url.hostname + " is ofline",
                         error: error
                     },
                     duration: new Date() - startTimer
@@ -47,10 +51,10 @@ module.exports = async (url, httpOption = HttpOption, requestBody) => {
                 reject(response);
             });
 
-            const convertedBody = JSON.stringify({ ...requestBody });
+            const convertedBody = JSON.stringify(requestBody);
 
-            // if (httpOption.option.method != "GET")
-            //     httpOption.addContent(convertedBody.length);
+            if (httpOption.option.method != "GET")
+                httpOption.addContent(convertedBody.length);
 
             // console.log("httpRequest:", convertedBody, httpOption.option);
             let req = request(url, httpOption, response => {

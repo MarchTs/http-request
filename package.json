@@ -1,6 +1,6 @@
 {
-    "name": "http-request",
-    "version": "1.0.0",
+    "name": "@march_ts/http-request",
+    "version": "1.0.5",
     "description": "Http request",
     "main": "http-request.js",
     "scripts": {
@@ -12,6 +12,6 @@
     "author": "THanapat Saisoontorwattana",
     "license": "ISC",
     "dependencies": {
-        "http-options": "git+https://github.com/MarchTs/http-options.git#v1.0.1"
+        "@march_ts/http-option": "^1.0.1"
     }
 }
