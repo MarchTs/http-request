@@ -3,7 +3,8 @@ const https = require("https");
 const http = require("http");
 
 const request = (url, httpOption = HttpOption, response) => {
-    const httpProtocol = url.protocol === "https:" ? https : http;
+    const httpProtocol =
+        url.toString().split(":")[0] === "https" ? https : http;
     if (typeof url !== "string") {
         url = url.toString();
     }
